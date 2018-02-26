@@ -1,0 +1,80 @@
+language: php
+
+branches:
+  except:
+    - /^release-.*$/
+
+env:
+  global:
+    - COMPOSER_ARGS="--no-interaction --ignore-platform-reqs"
+
+matrix:
+  include:
+    - php: 5.6
+      env:
+        - DEPS=lowest
+    - php: 5.6
+      env:
+        - DEPS=locked
+    - php: 5.6
+      env:
+        - DEPS=latest
+        - CHECK_CS=true
+        - CHECK_CPD=true
+        - CHECK_MD=true
+        - CHECK_LOC=true
+    - php: 7
+      env:
+        - DEPS=lowest
+    - php: 7
+      env:
+        - DEPS=locked
+    - php: 7
+      env:
+        - DEPS=latest
+    - php: 7.1
+      env:
+        - DEPS=lowest
+    - php: 7.1
+      env:
+        - DEPS=locked
+    - php: 7.1
+      env:
+        - DEPS=latest
+
+before_install:
+  - travis_retry composer self-update
+  - sudo apt-get update -qq
+  - sudo apt-get install -y -qq postfix
+
+install:
+  - if [[ $DEPS == 'latest' ]]; then travis_retry composer update $COMPOSER_ARGS ; fi
+  - if [[ $DEPS == 'lowest' ]]; then travis_retry composer update --prefer-lowest --prefer-stable $COMPOSER_ARGS ; fi
+  - travis_retry composer install $COMPOSER_ARGS
+  - composer show --installed
+
+before_script:
+  - sudo service postfix stop
+  - smtp-sink -d "%d.%H.%M.%S" localhost:2500 1000 &
+  - echo -e '#!/usr/bin/env bash\nexit 0' | sudo tee /usr/sbin/sendmail
+  - echo 'sendmail_path = "/usr/sbin/sendmail -t -i "' | sudo tee "/home/travis/.phpenv/versions/`php -i | grep "PHP Version" | head -n 1 | grep -o -P '\d+\.\d+\.\d+.*'`/etc/conf.d/sendmail.ini"
+
+script:
+  ## PHP_CodeSniffer
+  - if [[ $CHECK_CS == 'true' ]]; then composer cs-check ; fi
+  ## PHP Copy/Paste Detector
+  - if [[ $CHECK_CPD == 'true' ]]; then composer phpcpd src ; fi
+  ## PHP Mess Detector
+  - if [[ $CHECK_MD == 'true' ]]; then composer phpmd src text cleancode ; fi
+  - if [[ $CHECK_MD == 'true' ]]; then composer phpmd src text codesize ; fi
+  - if [[ $CHECK_MD == 'true' ]]; then composer phpmd src text controversial ; fi
+  - if [[ $CHECK_MD == 'true' ]]; then composer phpmd src text design ; fi
+  - if [[ $CHECK_MD == 'true' ]]; then composer phpmd src text naming ; fi
+  - if [[ $CHECK_MD == 'true' ]]; then composer phpmd src text unusedcode ; fi
+  ## PHPLOC
+  - if [[ $CHECK_LOC == 'true' ]]; then composer phploc src ; fi
+  ## PHPUNIT
+  - composer phpunit
+
+notifications:
+  email: false

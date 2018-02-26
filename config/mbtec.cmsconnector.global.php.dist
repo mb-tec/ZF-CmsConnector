@@ -1,0 +1,17 @@
+<?php
+
+return [
+    'mbuesing' => [
+        'mbtec_cmsconnector' => [
+            'cache_enabled' => false,
+            'cache_max_size' => 1048576,
+            'scheme' => 'http',
+            'host' => 'cms.acme.net',
+            'forbidden_dirs' => [
+                'setup',
+            ],
+            'htaccess_user' => 'test',
+            'htaccess_password' => 'test',
+        ],
+    ],
+];

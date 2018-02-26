@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'mbuesing' => [
-        'mbtec_cmsconnector' => [
+    'mbtec' => [
+        'cmsconnector' => [
             'cache_enabled' => false,
             'cache_max_size' => 1048576,
             'scheme' => 'http',

@@ -31,7 +31,7 @@ class Module implements ConfigProviderInterface
      */
     public function attachDispatchErrorHandler(Mvc\MvcEvent $e)
     {
-        if ($e->isError() && $e->getError() == Mvc\ZendApplication::ERROR_ROUTER_NO_MATCH) {
+        if ($e->isError() && $e->getError() == Mvc\Application::ERROR_ROUTER_NO_MATCH) {
             $oCmsResponse = $e
                 ->getApplication()
                 ->getServiceManager()

@@ -67,8 +67,8 @@ class Module implements ConfigProviderInterface
                         ->setRequest($oSm->get('Request'))
                         ->setConfig($oSm->get('config')['mbtec']['cmsconnector'])
                         ->setViewHelperManager($oSm->get('ViewHelperManager'))
-                        ->setLogger($oSm->get('mbtec.log.service'))
-                        ->setCache($oSm->get('mbtec.cache'));
+                        ->setLogger($oSm->get('mbtec.zf-log.service'))
+                        ->setCache($oSm->get('cache'));
                 },
             ],
         ];

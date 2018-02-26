@@ -43,9 +43,6 @@
     "zendframework/zend-modulemanager": "To use it as a Zend Framework module"
   },
   "autoload": {
-    "psr-0": {
-      "MBtec\\CmsConnector\\": "src/"
-    },
     "psr-4": {
       "MBtec\\CmsConnector\\": "src/"
     },
@@ -55,7 +52,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "MBtec\\CmsConnector\\Test\\": "./test/"
+      "MBtec\\CmsConnector\\Test\\": "test/"
     }
   },
   "scripts": {
@@ -64,6 +61,6 @@
     "phpcpd": "phpcpd",
     "phpmd": "phpmd",
     "phploc": "phploc src",
-    "phpunit": "phpunit --colors=always"
+    "test": "phpunit"
   }
 }

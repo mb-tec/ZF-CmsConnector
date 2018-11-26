@@ -5,6 +5,7 @@ namespace MBtec\CmsConnector;
 use Zend\Mvc;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ServiceManager\ServiceManager;
+use Zend\Http\PhpEnvironment\Request as HttpRequest;
 
 /**
  * Class        Module
@@ -21,28 +22,32 @@ class Module implements ConfigProviderInterface
      */
     public function onBootstrap(Mvc\MvcEvent $e)
     {
-        $oEventManager = $e->getApplication()->getEventManager();
-        $oEventManager->attach(Mvc\MvcEvent::EVENT_DISPATCH_ERROR, [$this, 'attachDispatchErrorHandler'], -999);
+        $e->getApplication()->getEventManager()
+            ->attach(Mvc\MvcEvent::EVENT_DISPATCH_ERROR, [$this, 'dispatchErrorHandler'], -999);
     }
 
     /**
      * @param Mvc\MvcEvent $e
      * @return mixed
      */
-    public function attachDispatchErrorHandler(Mvc\MvcEvent $e)
+    public function dispatchErrorHandler(Mvc\MvcEvent $e)
     {
-        if ($e->isError() && $e->getError() == Mvc\Application::ERROR_ROUTER_NO_MATCH) {
-            $oCmsResponse = $e
-                ->getApplication()
-                ->getServiceManager()
+        $sm = $e->getApplication()->getServiceManager();
+        $request = $sm->get('Request');
+
+        if ($request instanceof HttpRequest
+            && $e->isError()
+            && $e->getError() == Mvc\Application::ERROR_ROUTER_NO_MATCH
+        ) {
+            $cmsResponse = $sm
                 ->get('mbtec.cmsconnector.service')
                 ->setIsErrorLookup(true)
                 ->getResponse();
 
-            if (is_object($oCmsResponse) && $oCmsResponse->isOk()) {
+            if (is_object($cmsResponse) && $cmsResponse->isOk()) {
                 $e->setError(false);
 
-                return $oCmsResponse;
+                return $cmsResponse;
             }
         }
     }
@@ -62,13 +67,19 @@ class Module implements ConfigProviderInterface
     {
         return [
             'factories' => [
-                'mbtec.cmsconnector.service' => function (ServiceManager $oSm) {
-                    return (new Service\CmsConnectorService())
-                        ->setRequest($oSm->get('Request'))
-                        ->setConfig($oSm->get('config')['mbtec']['cmsconnector'])
-                        ->setViewHelperManager($oSm->get('ViewHelperManager'))
-                        ->setLogger($oSm->get('mbtec.zf-log.service'))
-                        ->setCache($oSm->get('cache'));
+                'mbtec.cmsconnector.service' => function (ServiceManager $sm) {
+                    $request = $sm->get('Request');
+
+                    if ($request instanceof HttpRequest) {
+                        return (new Service\CmsConnectorService())
+                            ->setRequest($sm->get('Request'))
+                            ->setConfig($sm->get('config')['mbtec']['cmsconnector'])
+                            ->setViewHelperManager($sm->get('ViewHelperManager'))
+                            ->setLogger($sm->get('mbtec.zf-log.service'))
+                            ->setCache($sm->get('cache'));
+                    }
+
+                    return null;
                 },
             ],
         ];

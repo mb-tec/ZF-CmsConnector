@@ -74,7 +74,7 @@ script:
   ## PHPLOC
   - if [[ $CHECK_LOC == 'true' ]]; then composer phploc src ; fi
   ## PHPUNIT
-  - composer phpunit
+  - composer test
 
 notifications:
   email: false

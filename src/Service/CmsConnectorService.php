@@ -278,6 +278,8 @@ class CmsConnectorService implements LoggerAwareInterface
 
             $sPath = '/' . trim($this->_getPath(), '/');
 
+            $urlParts = parse_url($sPath);
+
             if ($this->_aConfig['log']) {
                 $this->_oLogService->info($sPath, self::LOGFILE);
             }
@@ -286,7 +288,11 @@ class CmsConnectorService implements LoggerAwareInterface
             $oUri
                 ->setScheme($this->_aConfig['scheme'])
                 ->setHost($this->_aConfig['host'])
-                ->setPath($sPath);
+                ->setPath($urlParts['path']);
+
+            if (!empty($urlParts['query'])) {
+                $oUri->setQuery($urlParts['query']);
+            }
 
             $oClient = new HttpClient();
             $oClient
